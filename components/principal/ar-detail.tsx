@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,8 @@ import {
   ClipboardList,
   TrendingUp,
   History,
+  CircleSlash,
+  XCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Card } from "@/components/ui/card";
@@ -25,6 +27,23 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useDemoStore } from "@/lib/state";
 import { SKINS } from "@/lib/skins";
 import {
@@ -439,9 +458,188 @@ export function ArDetail({ arId }: { arId: string }) {
               The state stays consistent across the boundary.
             </p>
           </Card>
+
+          {/* SUP 12.8 lifecycle controls. Sit at the bottom of the rail
+              because they're rarely-used and destructive. */}
+          <ManageArMenu ar={ar} />
         </div>
       </div>
     </div>
+  );
+}
+
+function ManageArMenu({ ar }: { ar: ReturnType<typeof getArById> }) {
+  const [action, setAction] = useState<"suspend" | "terminate" | null>(null);
+  const [reason, setReason] = useState("");
+  const [confirmTradingName, setConfirmTradingName] = useState("");
+  const [terminationCategory, setTerminationCategory] = useState("by-mutual-agreement");
+  const [done, setDone] = useState(false);
+  if (!ar) return null;
+  const isSuspended = ar.status === "suspended";
+  const isTerminated = ar.status === "terminated";
+
+  function open(a: "suspend" | "terminate") {
+    setAction(a);
+    setReason("");
+    setConfirmTradingName("");
+    setDone(false);
+  }
+  function commit() {
+    setDone(true);
+    setTimeout(() => {
+      setAction(null);
+    }, 1600);
+  }
+  const valid =
+    action === "suspend"
+      ? reason.trim().length >= 10
+      : action === "terminate"
+        ? reason.trim().length >= 10 &&
+          confirmTradingName.trim().toLowerCase() === ar.tradingName.toLowerCase()
+        : false;
+
+  return (
+    <>
+      <Card className="p-5">
+        <SectionLabel>Manage AR (SUP 12.8)</SectionLabel>
+        <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+          Suspension or termination triggers a SUP 12.8 notification to the
+          FCA and revokes permissions on the appointment date.
+        </p>
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => open("suspend")}
+            disabled={isSuspended || isTerminated}
+          >
+            <CircleSlash className="size-3.5" />
+            Suspend
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/10"
+            onClick={() => open("terminate")}
+            disabled={isTerminated}
+          >
+            <XCircle className="size-3.5" />
+            Terminate
+          </Button>
+        </div>
+      </Card>
+      <Dialog open={action !== null} onOpenChange={(o) => !o && setAction(null)}>
+        <DialogContent className="max-w-md">
+          {done ? (
+            <div className="py-6 text-center">
+              <div className="mx-auto size-10 rounded-full bg-emerald-500/10 grid place-items-center text-emerald-600">
+                ✓
+              </div>
+              <h3 className="font-display text-xl font-medium mt-4 leading-tight">
+                {action === "suspend" ? "Suspension recorded" : "Termination scheduled"}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                {action === "suspend"
+                  ? "AR moved to status \"suspended\". The audit chain entry is written and the AR's permissions are paused pending review."
+                  : "AR moved to status \"terminated\". A SUP 12.8 termination notification has been queued for the FCA. Permissions will revoke on the effective date."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {action === "suspend"
+                    ? `Suspend ${ar.tradingName}`
+                    : `Terminate ${ar.tradingName}`}
+                </DialogTitle>
+                <DialogDescription className="leading-relaxed">
+                  {action === "suspend"
+                    ? "Suspension pauses the AR's permissions while you investigate. The AR cannot transact until reinstated. SUP 12.8 notification fires automatically."
+                    : "Termination is final and triggers a SUP 12.8 notification 30 calendar days ahead of the effective date. The AR's appointment ends, but supervision records are retained for the SYSC 9 floor."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                {action === "terminate" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="cat" className="text-xs">
+                      Termination category
+                    </Label>
+                    <Select
+                      value={terminationCategory}
+                      onValueChange={(v) =>
+                        setTerminationCategory(v ?? "by-mutual-agreement")
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="by-mutual-agreement">By mutual agreement</SelectItem>
+                        <SelectItem value="for-cause">For cause (regulatory or conduct)</SelectItem>
+                        <SelectItem value="by-ar">AR-initiated departure</SelectItem>
+                        <SelectItem value="by-principal">Principal-initiated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="space-y-1.5">
+                  <Label htmlFor="reason" className="text-xs">
+                    Reason{" "}
+                    <span className="text-muted-foreground">
+                      (audit chain, minimum 10 chars)
+                    </span>
+                  </Label>
+                  <textarea
+                    id="reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={3}
+                    placeholder={
+                      action === "suspend"
+                        ? "Why are you suspending? Pattern of complaints, scope concern, financial-soundness review..."
+                        : "Why is this AR being terminated? Cite the conduct event, decision, or contract clause."
+                    }
+                    className="w-full text-sm rounded-md border border-input bg-transparent px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                  />
+                </div>
+                {action === "terminate" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="confirm" className="text-xs">
+                      Type the trading name to confirm
+                    </Label>
+                    <Input
+                      id="confirm"
+                      value={confirmTradingName}
+                      onChange={(e) => setConfirmTradingName(e.target.value)}
+                      placeholder={ar.tradingName}
+                    />
+                  </div>
+                )}
+              </div>
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setAction(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={commit}
+                  disabled={!valid}
+                  className={
+                    action === "terminate"
+                      ? "bg-destructive text-white hover:bg-destructive/90"
+                      : ""
+                  }
+                >
+                  {action === "suspend"
+                    ? "Suspend AR"
+                    : "Schedule termination"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

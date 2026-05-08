@@ -92,7 +92,14 @@ export function PersonaSwitcher() {
           if (!open) setConfirmTarget(null);
         }}
       >
-        <DialogContent className="max-w-md">
+        {/* Bottom sheet on mobile (sm:bottom-auto removes the bottom
+            anchoring at the sm breakpoint), centred dialog on
+            tablet/desktop. The persona switch is the demo's
+            architectural showpiece — on mobile a sheet from the
+            bottom is closer to the cinematic "different shoes"
+            metaphor than a small centred modal. */}
+        <DialogContent className="max-w-md sm:max-w-md max-sm:rounded-t-2xl max-sm:rounded-b-none max-sm:bottom-0 max-sm:top-auto max-sm:left-0 max-sm:right-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:max-w-none max-sm:px-5 max-sm:pt-6 max-sm:pb-6 max-sm:data-[state=closed]:slide-out-to-bottom max-sm:data-[state=open]:slide-in-from-bottom">
+          <div className="mx-auto sm:hidden mb-2 h-1 w-10 rounded-full bg-muted" aria-hidden />
           <DialogHeader>
             <DialogTitle>You are now the AR</DialogTitle>
             <DialogDescription className="leading-relaxed">
@@ -102,7 +109,7 @@ export function PersonaSwitcher() {
               any time.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 max-sm:flex-col-reverse max-sm:gap-2 max-sm:[&>*]:w-full">
             <Button
               variant="outline"
               onClick={() => setConfirmTarget(null)}

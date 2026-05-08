@@ -3,7 +3,15 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Download, Plus, Search, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  CalendarPlus,
+  Download,
+  Mail,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -16,6 +24,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Select,
   SelectContent,
@@ -54,6 +72,17 @@ export function ArRegisterTable() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ArStatus | "all">("all");
   const [band, setBand] = useState<RiskBand | "all">("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkConfirm, setBulkConfirm] = useState<null | string>(null);
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   const drafts = useDemoStore((s) => s.draftAppointments);
   const allArs = useMemo(() => [...drafts, ...getArs(skin)], [skin, drafts]);
@@ -164,6 +193,22 @@ export function ArRegisterTable() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={
+                    sorted.length > 0 &&
+                    sorted.every((a) => selected.has(a.id))
+                  }
+                  onCheckedChange={(v) => {
+                    if (v === true) {
+                      setSelected(new Set(sorted.map((a) => a.id)));
+                    } else {
+                      setSelected(new Set());
+                    }
+                  }}
+                  aria-label="Select all visible ARs"
+                />
+              </TableHead>
               <TableHead>Trading name</TableHead>
               <TableHead className="hidden sm:table-cell">FRN</TableHead>
               <TableHead>Type</TableHead>
@@ -190,7 +235,8 @@ export function ArRegisterTable() {
               return (
               <TableRow
                 key={ar.id}
-                className="cursor-pointer hover:bg-foreground/[0.03] transition-colors relative"
+                className="cursor-pointer hover:bg-foreground/[0.03] transition-colors relative data-[selected=true]:bg-foreground/[0.04]"
+                data-selected={selected.has(ar.id)}
                 onClick={() => open(ar)}
                 style={
                   railColour
@@ -198,6 +244,13 @@ export function ArRegisterTable() {
                     : undefined
                 }
               >
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selected.has(ar.id)}
+                    onCheckedChange={() => toggleSelected(ar.id)}
+                    aria-label={`Select ${ar.tradingName}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="font-medium leading-tight max-w-[260px] truncate">
                     {ar.tradingName}
@@ -252,7 +305,139 @@ export function ArRegisterTable() {
           />
         )}
       </div>
+
+      <BulkActionBar
+        selectedCount={selected.size}
+        onClear={() => setSelected(new Set())}
+        onAction={(a) => setBulkConfirm(a)}
+      />
+
+      {bulkConfirm && (
+        <BulkConfirmDialog
+          action={bulkConfirm}
+          count={selected.size}
+          onClose={() => setBulkConfirm(null)}
+          onConfirm={() => {
+            setBulkConfirm(null);
+            setSelected(new Set());
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function BulkActionBar({
+  selectedCount,
+  onClear,
+  onAction,
+}: {
+  selectedCount: number;
+  onClear: () => void;
+  onAction: (action: string) => void;
+}) {
+  return (
+    <AnimatePresence>
+      {selectedCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 24 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-[calc(100vw-2rem)]"
+        >
+          <div className="bg-foreground text-background rounded-full shadow-2xl ring-1 ring-foreground/20 pl-4 pr-2 py-1.5 flex items-center gap-2">
+            <span className="text-sm font-medium tabular-nums">
+              {selectedCount} selected
+            </span>
+            <span className="h-5 w-px bg-background/30" aria-hidden />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-background hover:bg-background/15 gap-1.5 text-xs"
+              onClick={() => onAction("schedule-review")}
+            >
+              <CalendarPlus className="size-3.5" />
+              Schedule review
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-background hover:bg-background/15 gap-1.5 text-xs"
+              onClick={() => onAction("send-reminder")}
+            >
+              <Mail className="size-3.5" />
+              Send reminder
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-background hover:bg-background/15 gap-1.5 text-xs"
+              onClick={() => onAction("export-csv")}
+            >
+              <Download className="size-3.5" />
+              Export CSV
+            </Button>
+            <button
+              type="button"
+              onClick={onClear}
+              className="size-7 rounded-full grid place-items-center hover:bg-background/15"
+              aria-label="Clear selection"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function BulkConfirmDialog({
+  action,
+  count,
+  onClose,
+  onConfirm,
+}: {
+  action: string;
+  count: number;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const labels: Record<string, { title: string; body: string; cta: string }> = {
+    "schedule-review": {
+      title: `Schedule a review for ${count} AR${count === 1 ? "" : "s"}`,
+      body: "Adds a file-review task to the principal-compliance queue for each selected AR. Sampling honours the firm's review programme rules.",
+      cta: "Schedule reviews",
+    },
+    "send-reminder": {
+      title: `Send a reminder to ${count} AR${count === 1 ? "" : "s"}`,
+      body: "Pushes a required-action notification to each AR's home surface. The reminder lands as an in-product action and an email in production.",
+      cta: "Send reminders",
+    },
+    "export-csv": {
+      title: `Export ${count} AR${count === 1 ? "" : "s"} as CSV`,
+      body: "Downloads a CSV with trading name, FRN, type, status, risk score, last review date, and primary contact. Fits the FCA REP025 staging schema.",
+      cta: "Export",
+    },
+  };
+  const l = labels[action];
+  if (!l) return null;
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{l.title}</DialogTitle>
+          <DialogDescription className="leading-relaxed">{l.body}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={onConfirm}>{l.cta}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
