@@ -50,6 +50,48 @@ export function computeRiskScore(
   );
 }
 
+export interface RiskScoreContribution {
+  input: keyof RiskScoreInputs;
+  label: string;
+  weight: number;
+  rawValue: number;
+  contribution: number;
+  /** Percent of the composite this input contributed (0-100). */
+  share: number;
+}
+
+/**
+ * Derive a per-input attribution for a composite score so the
+ * principal-side gauge tooltip and the AR-side dashboard can show
+ * "your score moved from 38 to 42 because complaints density was
+ * up". Pure function over the same weights.
+ */
+export function explainScore(
+  inputs: RiskScoreInputs,
+  weights: RiskScoreWeights = DEFAULT_WEIGHTS,
+): RiskScoreContribution[] {
+  const composite = computeRiskScore(inputs, weights);
+  const safe = composite > 0 ? composite : 1;
+  const rows: Array<{ key: keyof RiskScoreInputs; label: string; weight: number; rawValue: number }> = [
+    { key: "complaintsDensity", label: "Complaints density", weight: weights.complaints, rawValue: inputs.complaintsDensity },
+    { key: "breachSeveritySum", label: "Breach severity", weight: weights.breach, rawValue: inputs.breachSeveritySum },
+    { key: "fileReviewInverse", label: "File-review score (inverse)", weight: weights.reviewInverse, rawValue: inputs.fileReviewInverse },
+    { key: "timeSinceLastReview", label: "Time since last review", weight: weights.timeSinceReview, rawValue: inputs.timeSinceLastReview },
+    { key: "miAnomalyScore", label: "MI anomaly", weight: weights.miAnomaly, rawValue: inputs.miAnomalyScore },
+  ];
+  return rows.map((r) => {
+    const contribution = r.rawValue * r.weight * 100;
+    return {
+      input: r.key,
+      label: r.label,
+      weight: r.weight,
+      rawValue: r.rawValue,
+      contribution,
+      share: (contribution / safe) * 100,
+    };
+  });
+}
+
 export function bandFromScore(score: number): RiskBand {
   if (score < 20) return "low";
   if (score < 40) return "moderate";

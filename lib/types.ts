@@ -106,6 +106,9 @@ export interface FileReview {
   caseRef: string;
   reviewerName: string;
   rubricCode: RubricCode;
+  /** Rubric version at the time of scoring, so historic reviews stay
+   *  legible after the rubric is amended. Demo defaults to "v1". */
+  rubricVersion?: string;
   findings: FileReviewFinding[];
   score: number;
   status: FileReviewStatus;
@@ -169,6 +172,13 @@ export interface ConductEvent {
   detail: string;
 }
 
+/**
+ * Demo-side audit event. The production shape (documented in
+ * `architecture/data-model`) carries `tenantId`, `prevHash`, `hash`,
+ * `ip`, `userAgent` for the SHA-256 chain. The demo set is a strict
+ * subset that's sufficient for in-memory rendering. See the
+ * mock-vs-real boundary doc for the seam.
+ */
 export interface AuditEvent {
   id: Ulid;
   at: IsoTimestamp;

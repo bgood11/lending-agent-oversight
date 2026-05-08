@@ -247,7 +247,6 @@ function generateForSkin(
       ? Math.floor(rand() * 3)
       : Math.floor(rand() * 2);
     for (let b = 0; b < breachCount; b++) {
-      const ageDays = Math.round(rand() * 320);
       const category = pick(rand, [
         "conduct", "financial-crime", "data-protection", "complaints-handling",
         "advice-suitability", "disclosure", "training-competence", "other",
@@ -263,6 +262,16 @@ function generateForSkin(
         rand() < 0.40 ? "closed"
         : rand() < 0.65 ? "resolved"
         : rand() < 0.85 ? "in-remediation" : "open";
+      // Bias age by status. Open breaches are recent (otherwise the
+      // demo's SUP 15 countdowns read as wildly overdue and the buyer
+      // assumes the system is broken). In-remediation can be older.
+      // Resolved/closed sample any age.
+      const ageDays =
+        status === "open"
+          ? Math.round(rand() * 12)            // 0-12 days, in window
+          : status === "in-remediation"
+            ? 5 + Math.round(rand() * 50)      // 5-55 days
+            : Math.round(rand() * 280);        // any age
       const reportedAt = isoOffsetDays(ageDays);
       const awareAt = isoOffsetDays(ageDays + Math.floor(rand() * 3));
       const isSignificantOrMaterial = severity === "significant" || severity === "material";
