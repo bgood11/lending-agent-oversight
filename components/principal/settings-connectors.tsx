@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import {
-  CheckCircle2,
   CircleAlert,
   Plug,
   Database,
@@ -291,7 +290,10 @@ function StatusBadge({ status }: { status: ConnectorStatus }) {
   if (status === "connected") {
     return (
       <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px] gap-1">
-        <CheckCircle2 className="size-2.5" />
+        <span className="relative flex size-2 items-center justify-center" aria-hidden>
+          <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-50 animate-ping" />
+          <span className="relative size-1.5 rounded-full bg-emerald-500" />
+        </span>
         Connected
       </Badge>
     );

@@ -103,17 +103,23 @@ export function AnnualReviewPacket({ arId }: { arId: string }) {
             self-assessment under PS22/11 and the annual Consumer Duty board report.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-1.5">
+        <div className="flex items-center gap-2 print:hidden">
+          <Button
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => {
+              if (typeof window !== "undefined") window.print();
+            }}
+          >
             <Download className="size-4" />
-            Print PDF
+            Export as PDF
           </Button>
         </div>
       </header>
 
       <div className="grid lg:grid-cols-[200px_minmax(0,1fr)] gap-8">
         {/* Anchor rail */}
-        <nav className="hidden lg:block sticky top-20 self-start space-y-1">
+        <nav className="hidden lg:block sticky top-20 self-start space-y-1 print:hidden">
           {SECTIONS.map((s) => (
             <button
               key={s.id}
@@ -349,9 +355,26 @@ function Section({
   title: string;
   children: React.ReactNode;
 }) {
+  // Magazine-style section header: oversized Fraunces section number,
+  // h2 title, horizontal rule. Gives the long packet rhythm.
+  const idx = SECTIONS.findIndex((s) => s.id === id);
+  const total = SECTIONS.length;
+  const num = idx >= 0 ? String(idx + 1).padStart(2, "0") : "—";
   return (
-    <section id={id} className="scroll-mt-24 space-y-3">
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    <section id={id} className="scroll-mt-24 space-y-4">
+      <div className="flex items-baseline justify-between gap-3 pb-2 border-b border-border/70">
+        <div className="flex items-baseline gap-3 min-w-0">
+          <span className="font-display text-3xl font-medium text-amber leading-none tabular-nums shrink-0">
+            {num}
+          </span>
+          <h2 className="font-display text-xl sm:text-2xl font-medium tracking-tight leading-tight truncate">
+            {title}
+          </h2>
+        </div>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono tabular-nums shrink-0">
+          {idx >= 0 ? `${num} / ${String(total).padStart(2, "0")}` : ""}
+        </span>
+      </div>
       {children}
     </section>
   );

@@ -208,6 +208,33 @@ export function BreachDetail({ breachId }: { breachId: string }) {
               <div>{breach.notifyByAt ? `Window: ${breach.severity === "significant" ? "1 business day" : "30 days"}` : "Below threshold"}</div>
             </div>
           </Card>
+
+          {/* Next steps rail — anchors the eye after the SUP 15 timer. */}
+          <Card className="p-5">
+            <SectionLabel>Next steps</SectionLabel>
+            <ol className="mt-3 space-y-2.5">
+              <NextStep
+                done={Boolean(breach.notifiedFcaAt) || confirmedNotified}
+                label="File the SUP 15 notification"
+                detail="Step-up auth required in production"
+              />
+              <NextStep
+                done={breach.status === "in-remediation" || breach.status === "resolved" || breach.status === "closed"}
+                label="Request remediation evidence from the AR"
+                detail="Triggers an AR-side required action"
+              />
+              <NextStep
+                done={breach.status === "resolved" || breach.status === "closed"}
+                label="Capture root-cause analysis"
+                detail="Feeds the AR's risk-score breach input"
+              />
+              <NextStep
+                done={breach.status === "closed"}
+                label="Compliance officer sign-off and close"
+                detail="Audit-chain entry, breach moves to history"
+              />
+            </ol>
+          </Card>
         </div>
       </div>
     </div>
@@ -219,6 +246,43 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">
       {children}
     </div>
+  );
+}
+
+function NextStep({
+  done,
+  label,
+  detail,
+}: {
+  done: boolean;
+  label: string;
+  detail: string;
+}) {
+  return (
+    <li
+      className={`flex items-start gap-2.5 text-sm ${
+        done ? "opacity-60" : ""
+      }`}
+    >
+      <span
+        className={`size-4 rounded-full grid place-items-center shrink-0 mt-0.5 text-[10px] font-bold tabular-nums ${
+          done
+            ? "bg-emerald-500 text-white"
+            : "border border-border bg-background text-muted-foreground"
+        }`}
+        aria-hidden
+      >
+        {done ? "✓" : ""}
+      </span>
+      <div className="min-w-0">
+        <div
+          className={`leading-tight ${done ? "line-through text-muted-foreground" : "font-medium"}`}
+        >
+          {label}
+        </div>
+        <div className="text-[11px] text-muted-foreground mt-0.5">{detail}</div>
+      </div>
+    </li>
   );
 }
 
