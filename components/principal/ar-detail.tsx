@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Building,
@@ -27,6 +29,7 @@ import { useDemoStore } from "@/lib/state";
 import { SKINS } from "@/lib/skins";
 import {
   getArById,
+  getArs,
   getBreachesForAr,
   getReviewsForAr,
   getMIReturnsForAr,
@@ -417,11 +420,29 @@ function fmtRelative(iso: string): string {
 }
 
 function NotFound({ skin }: { skin: string }) {
+  const router = useRouter();
+  // Bounce to the highest-risk active AR in this skin's set after 1.4s.
+  // Anyone hitting an unknown id (cold-pasted URL, stale link from a
+  // sibling product, manual fishing for /ar-001 style ids) lands on
+  // a real surface rather than a dead end.
+  useEffect(() => {
+    const ars = getArs(skin as "heritage" | "crown" | "pinpoint");
+    const fallback = [...ars]
+      .filter((a) => a.status === "active")
+      .sort((a, b) => b.riskScore - a.riskScore)[0];
+    if (!fallback) return;
+    const id = setTimeout(() => {
+      router.replace(`/demo/principal/register/${fallback.id}`);
+    }, 1400);
+    return () => clearTimeout(id);
+  }, [skin, router]);
+
   return (
     <div className="mx-auto max-w-md text-center py-20 px-6">
       <h1 className="text-xl font-semibold">AR not found</h1>
       <p className="text-sm text-muted-foreground mt-2">
-        This AR may have been terminated or belong to a different principal firm.
+        This AR may have been terminated or belong to a different principal
+        firm. Showing the highest-risk active AR instead in a moment.
       </p>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
         <Link
@@ -429,7 +450,7 @@ function NotFound({ skin }: { skin: string }) {
           className="inline-flex items-center gap-1 mt-4 text-sm text-primary font-medium hover:underline"
         >
           <ArrowLeft className="size-4" />
-          Back to AR register
+          Or jump to the AR register
         </Link>
       </motion.div>
     </div>
