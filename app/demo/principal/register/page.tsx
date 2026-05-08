@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useDemoStore } from "@/lib/state";
 import { SKINS } from "@/lib/skins";
 import { ArRegisterTable } from "@/components/principal/ar-register-table";
@@ -25,16 +26,27 @@ export default function ArRegisterPage() {
         Compliance home
       </Link>
 
-      <div>
-        <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
-          {skinDef.shortName} · {skinDef.rubric} rubric
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+            {skinDef.shortName} · {skinDef.rubric} rubric
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-semibold leading-tight mt-1">
+            AR register
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
+            Filter, sort, and drill into any AR. The register the FCA expects
+            you to keep, in a shape that doesn&apos;t go stale.
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold leading-tight mt-1">
-          AR register
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1.5">
-          Filter, sort, and drill into any AR. The register the FCA expects you to keep, in a shape that doesn&apos;t go stale.
-        </p>
+        <Button
+          render={<Link href="/demo/principal/register/new" />}
+          className="gap-1.5 self-start sm:self-end"
+          size="lg"
+        >
+          <Plus className="size-4" />
+          Appoint a new AR or IAR
+        </Button>
       </div>
 
       <ArRegisterTable />

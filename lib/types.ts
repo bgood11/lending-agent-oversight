@@ -29,7 +29,12 @@ export interface PostalAddress {
   country: "GB";
 }
 
-export type ArStatus = "active" | "suspended" | "under-investigation" | "terminated";
+export type ArStatus =
+  | "pending-appointment"
+  | "active"
+  | "suspended"
+  | "under-investigation"
+  | "terminated";
 
 export interface AppointedRep {
   id: Ulid;

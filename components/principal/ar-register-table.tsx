@@ -29,6 +29,7 @@ import { RiskBandBadge } from "./risk-band-badge";
 
 const STATUSES: Array<{ value: ArStatus | "all"; label: string }> = [
   { value: "all", label: "All statuses" },
+  { value: "pending-appointment", label: "Pending appointment" },
   { value: "active", label: "Active" },
   { value: "suspended", label: "Suspended" },
   { value: "under-investigation", label: "Under investigation" },
@@ -53,7 +54,8 @@ export function ArRegisterTable() {
   const [status, setStatus] = useState<ArStatus | "all">("all");
   const [band, setBand] = useState<RiskBand | "all">("all");
 
-  const allArs = useMemo(() => getArs(skin), [skin]);
+  const drafts = useDemoStore((s) => s.draftAppointments);
+  const allArs = useMemo(() => [...drafts, ...getArs(skin)], [skin, drafts]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -69,7 +71,15 @@ export function ArRegisterTable() {
   }, [allArs, search, status, band]);
 
   const sorted = useMemo(
-    () => [...filtered].sort((a, b) => b.riskScore - a.riskScore),
+    () =>
+      [...filtered].sort((a, b) => {
+        // Pending appointments float to the top so a freshly-added AR
+        // is immediately visible.
+        const aPending = a.status === "pending-appointment" ? 1 : 0;
+        const bPending = b.status === "pending-appointment" ? 1 : 0;
+        if (aPending !== bPending) return bPending - aPending;
+        return b.riskScore - a.riskScore;
+      }),
     [filtered],
   );
 

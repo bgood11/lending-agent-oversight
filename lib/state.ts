@@ -18,6 +18,7 @@ import type {
   OversightTaskOverride,
   TaskFrequency,
   ConnectorStatus,
+  AppointedRep,
 } from "./types";
 import type { RubricItem } from "./rubrics";
 
@@ -87,6 +88,12 @@ interface DemoState {
   connectorStatusOverrides: Record<string, ConnectorStatus>;
   setConnectorStatus: (id: string, status: ConnectorStatus) => void;
   resetConnectorStatuses: () => void;
+
+  /** Draft AR appointments going through the 30-day FCA notification
+   *  window. Layered onto the register so newly-appointed ARs appear
+   *  immediately with a `pending-appointment` status. */
+  draftAppointments: AppointedRep[];
+  appendDraftAppointment: (ar: AppointedRep) => void;
 }
 
 export const useDemoStore = create<DemoState>()(
@@ -176,6 +183,10 @@ export const useDemoStore = create<DemoState>()(
           },
         })),
       resetConnectorStatuses: () => set({ connectorStatusOverrides: {} }),
+
+      draftAppointments: [],
+      appendDraftAppointment: (ar) =>
+        set((s) => ({ draftAppointments: [ar, ...s.draftAppointments] })),
     }),
     {
       name: "lao-demo-state",
