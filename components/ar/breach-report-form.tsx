@@ -170,8 +170,9 @@ export function BreachReportForm() {
           What happened?
         </h1>
         <p className="text-sm text-muted-foreground mt-1.5">
-          Be specific about what occurred, when, and what you&apos;ve done already.
-          {skinDef.shortName} compliance will assess severity and decide whether SUP 15 notification is required.
+          Be specific about what occurred, when, and what you&apos;ve done
+          already. {skinDef.shortName} compliance will assess severity and
+          decide whether SUP 15 notification is required.
         </p>
       </div>
 

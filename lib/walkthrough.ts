@@ -38,7 +38,7 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     surface: "/demo/principal/register",
     title: "Filter to the critical band",
     body: "Sortable on every column. Click the Critical risk-band chip in the filter bar, then click into the top row.",
-    cta: "Drill into Pemberton Mortgages",
+    cta: "Drill into the top critical AR",
     targetSelector: "[data-walkthrough='filter-critical']",
   },
   {

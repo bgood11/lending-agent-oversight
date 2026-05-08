@@ -245,10 +245,13 @@ export function AnnualReviewPacket({ arId }: { arId: string }) {
                         {m.period.year} Q{m.period.quarter}
                       </div>
                       <div className="text-base font-semibold tabular-nums mt-1">
-                        £{(m.metrics.newBusinessVolumeGBP / 100 / 1000).toFixed(0)}k
+                        {formatPounds(m.metrics.newBusinessVolumeGBP / 100)}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
-                        {m.metrics.complaintsReceived} complaints · {m.metrics.breachesSelfReported} breaches
+                        {m.metrics.complaintsReceived}{" "}
+                        {m.metrics.complaintsReceived === 1 ? "complaint" : "complaints"} ·{" "}
+                        {m.metrics.breachesSelfReported}{" "}
+                        {m.metrics.breachesSelfReported === 1 ? "breach" : "breaches"}
                       </div>
                     </div>
                   ))}
@@ -421,4 +424,18 @@ function NotFound() {
       </Link>
     </div>
   );
+}
+
+function formatPounds(value: number): string {
+  if (value >= 1_000_000) {
+    return `£${(value / 1_000_000).toFixed(1)}m`;
+  }
+  if (value >= 1_000) {
+    return `£${(value / 1_000).toFixed(0)}k`;
+  }
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    maximumFractionDigits: 0,
+  }).format(value);
 }

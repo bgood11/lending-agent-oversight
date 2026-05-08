@@ -65,7 +65,7 @@ export function PersonaSwitcher() {
   return (
     <>
       <div
-        className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5"
+        className="inline-flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5"
         role="tablist"
         aria-label="Persona"
         data-walkthrough="persona-switcher"
@@ -74,12 +74,14 @@ export function PersonaSwitcher() {
           active={activeKey === "principal"}
           icon={Briefcase}
           label="Principal"
+          mobileLabel="P"
           onClick={() => attempt("principal-compliance-officer")}
         />
         <PersonaPill
           active={activeKey === "ar"}
           icon={User}
           label="AR"
+          mobileLabel="AR"
           onClick={() => attempt("ar-user")}
         />
       </div>
@@ -130,11 +132,13 @@ function PersonaPill({
   active,
   icon: Icon,
   label,
+  mobileLabel,
   onClick,
 }: {
   active: boolean;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  mobileLabel?: string;
   onClick: () => void;
 }) {
   return (
@@ -144,7 +148,7 @@ function PersonaPill({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "relative flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors",
+        "relative flex items-center gap-1.5 rounded px-2 sm:px-2.5 py-1 text-xs font-medium transition-colors",
         active
           ? "text-foreground"
           : "text-muted-foreground hover:text-foreground",
@@ -159,7 +163,8 @@ function PersonaPill({
       )}
       <span className="relative flex items-center gap-1.5">
         <Icon className="size-3.5" />
-        {label}
+        <span className="hidden sm:inline">{label}</span>
+        <span className="sm:hidden">{mobileLabel ?? label}</span>
       </span>
     </button>
   );

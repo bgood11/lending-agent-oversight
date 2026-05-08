@@ -279,12 +279,18 @@ export function ArDetail({ arId }: { arId: string }) {
                         {m.period.year} Q{m.period.quarter}
                       </div>
                       <div className="text-base font-semibold tabular-nums mt-1">
-                        £
-                        {(m.metrics.newBusinessVolumeGBP / 100 / 1000).toFixed(0)}
-                        k
+                        {(() => {
+                          const v = m.metrics.newBusinessVolumeGBP / 100;
+                          if (v >= 1_000_000) return `£${(v / 1_000_000).toFixed(1)}m`;
+                          if (v >= 1_000) return `£${(v / 1_000).toFixed(0)}k`;
+                          return `£${v.toFixed(0)}`;
+                        })()}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
-                        {m.metrics.newBusinessCount} cases · {m.metrics.complaintsReceived} complaints
+                        {m.metrics.newBusinessCount}{" "}
+                        {m.metrics.newBusinessCount === 1 ? "case" : "cases"} ·{" "}
+                        {m.metrics.complaintsReceived}{" "}
+                        {m.metrics.complaintsReceived === 1 ? "complaint" : "complaints"}
                       </div>
                     </div>
                   ))}

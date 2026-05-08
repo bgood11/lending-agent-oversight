@@ -53,7 +53,7 @@ const FEATURES = [
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="py-20 sm:py-28 scroll-mt-16">
+    <section id="features" className="py-20 sm:py-28 scroll-mt-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeader
           eyebrow="Features"
