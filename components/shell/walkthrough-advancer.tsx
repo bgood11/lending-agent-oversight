@@ -8,13 +8,20 @@ import { useDemoStore } from "@/lib/state";
  * Watches surface transitions and bumps the walkthrough step floor.
  * Pure side-effect, no UI.
  */
+// Most specific paths first so the find returns the right floor.
+// Trailing-slash entries match drill-in pages (e.g. AR detail under
+// the register list, or breach detail under the triage queue).
 const SURFACE_FLOORS: Array<{ prefix: string; floor: number }> = [
+  { prefix: "/demo/principal/annual-reviews/", floor: 9 },
   { prefix: "/demo/principal/annual-reviews", floor: 9 },
+  { prefix: "/demo/principal/reviews/", floor: 8 },
   { prefix: "/demo/principal/reviews", floor: 8 },
+  { prefix: "/demo/principal/breaches/", floor: 7 },
   { prefix: "/demo/principal/breaches", floor: 7 },
   { prefix: "/demo/ar/breaches/new", floor: 6 },
   { prefix: "/demo/ar/mi", floor: 5 },
   { prefix: "/demo/ar", floor: 4 },
+  { prefix: "/demo/principal/register/", floor: 3 },
   { prefix: "/demo/principal/register", floor: 2 },
   { prefix: "/demo/principal", floor: 1 },
   { prefix: "/", floor: 0 },
