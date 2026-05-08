@@ -11,9 +11,26 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { DEFAULT_SKIN_ID, type SkinId } from "./skins";
-import type { Persona, BreachReport, MIReturn } from "./types";
+import type {
+  Persona,
+  BreachReport,
+  MIReturn,
+  OversightTaskOverride,
+  TaskFrequency,
+  ConnectorStatus,
+} from "./types";
+import type { RubricItem } from "./rubrics";
 
 export type DemoMode = "scripted" | "explore";
+
+/** Custom rubric item added by principal-admin via Settings. Layered
+ *  on top of the canonical rubric. */
+export interface CustomRubricItem extends RubricItem {
+  id: string;
+  rubricCode: "MCOB" | "ICOBS" | "CONC" | "IAR";
+  /** When was it added; used in the rubric version string. */
+  addedAt: string;
+}
 
 interface DemoState {
   skin: SkinId;
@@ -47,6 +64,29 @@ interface DemoState {
 
   liveMIReturns: MIReturn[];
   appendLiveMIReturn: (m: MIReturn) => void;
+
+  /** Per-tenant oversight task overrides. Keyed by task id. */
+  taskOverrides: Record<string, OversightTaskOverride>;
+  setTaskFrequency: (taskId: string, frequency: TaskFrequency) => void;
+  setTaskEnabled: (taskId: string, enabled: boolean) => void;
+  resetTaskOverrides: () => void;
+
+  /** Custom rubric items added by principal-admin. */
+  customRubricItems: CustomRubricItem[];
+  addCustomRubricItem: (item: CustomRubricItem) => void;
+  removeCustomRubricItem: (id: string) => void;
+
+  /** Canonical rubric item codes the principal-admin has marked as
+   *  inapplicable for this tenant. Layers over the shipped rubric. */
+  inapplicableRubricCodes: string[];
+  toggleRubricCodeInapplicable: (code: string) => void;
+
+  /** Connector status overrides for the demo. The default fixtures
+   *  ship with everything connected; toggling "disconnect" in the
+   *  demo simulates a disconnection event. */
+  connectorStatusOverrides: Record<string, ConnectorStatus>;
+  setConnectorStatus: (id: string, status: ConnectorStatus) => void;
+  resetConnectorStatuses: () => void;
 }
 
 export const useDemoStore = create<DemoState>()(
@@ -81,6 +121,61 @@ export const useDemoStore = create<DemoState>()(
       liveMIReturns: [],
       appendLiveMIReturn: (m) =>
         set((s) => ({ liveMIReturns: [m, ...s.liveMIReturns] })),
+
+      taskOverrides: {},
+      setTaskFrequency: (taskId, frequency) =>
+        set((s) => ({
+          taskOverrides: {
+            ...s.taskOverrides,
+            [taskId]: {
+              taskId,
+              frequency,
+              enabled: s.taskOverrides[taskId]?.enabled ?? true,
+              notes: s.taskOverrides[taskId]?.notes ?? null,
+            },
+          },
+        })),
+      setTaskEnabled: (taskId, enabled) =>
+        set((s) => ({
+          taskOverrides: {
+            ...s.taskOverrides,
+            [taskId]: {
+              taskId,
+              frequency: s.taskOverrides[taskId]?.frequency ?? null,
+              enabled,
+              notes: s.taskOverrides[taskId]?.notes ?? null,
+            },
+          },
+        })),
+      resetTaskOverrides: () => set({ taskOverrides: {} }),
+
+      customRubricItems: [],
+      addCustomRubricItem: (item) =>
+        set((s) => ({
+          customRubricItems: [...s.customRubricItems, item],
+        })),
+      removeCustomRubricItem: (id) =>
+        set((s) => ({
+          customRubricItems: s.customRubricItems.filter((i) => i.id !== id),
+        })),
+
+      inapplicableRubricCodes: [],
+      toggleRubricCodeInapplicable: (code) =>
+        set((s) => ({
+          inapplicableRubricCodes: s.inapplicableRubricCodes.includes(code)
+            ? s.inapplicableRubricCodes.filter((c) => c !== code)
+            : [...s.inapplicableRubricCodes, code],
+        })),
+
+      connectorStatusOverrides: {},
+      setConnectorStatus: (id, status) =>
+        set((s) => ({
+          connectorStatusOverrides: {
+            ...s.connectorStatusOverrides,
+            [id]: status,
+          },
+        })),
+      resetConnectorStatuses: () => set({ connectorStatusOverrides: {} }),
     }),
     {
       name: "lao-demo-state",
@@ -90,6 +185,12 @@ export const useDemoStore = create<DemoState>()(
         // Persona, mode, walkthrough step, and live additions all reset
         // every session so the visitor always lands in scripted mode
         // with a clean fixture set.
+        // Settings overrides persist so a customisation made in one
+        // session is visible on return.
+        taskOverrides: state.taskOverrides,
+        customRubricItems: state.customRubricItems,
+        inapplicableRubricCodes: state.inapplicableRubricCodes,
+        connectorStatusOverrides: state.connectorStatusOverrides,
       }),
     },
   ),

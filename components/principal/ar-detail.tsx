@@ -102,6 +102,12 @@ export function ArDetail({ arId }: { arId: string }) {
           <p className="text-sm text-muted-foreground">
             {ar.legalName} · {ar.city} · supervised by {skinDef.shortName}
           </p>
+          <p className="text-[11px] text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 mt-1">
+            <span className="inline-flex items-center gap-1">
+              <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
+              Auto-enriched: Companies House (4h ago) · FCA Register (12h ago) · CreditSafe (2d ago)
+            </span>
+          </p>
         </div>
 
         <div className="flex flex-col items-center gap-3 shrink-0">

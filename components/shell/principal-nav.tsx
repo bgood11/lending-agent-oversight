@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ClipboardList,
   ScrollText,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ const ITEMS = [
   { href: "/demo/principal/breaches", label: "Breaches", Icon: AlertTriangle },
   { href: "/demo/principal/reviews", label: "File reviews", Icon: ClipboardList },
   { href: "/demo/principal/annual-reviews", label: "Annual reviews", Icon: ScrollText },
+  { href: "/demo/principal/settings", label: "Settings", Icon: SettingsIcon },
 ];
 
 /**

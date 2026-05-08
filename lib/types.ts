@@ -196,3 +196,115 @@ export interface RequiredAction {
   dueAt: IsoTimestamp;
   href: string;
 }
+
+/**
+ * Oversight task frequency. Drives the cadence at which a tenant-
+ * level supervisory task fires on the principal's calendar. The
+ * principal-admin can change a task's frequency without altering
+ * the underlying obligation, e.g. running file reviews monthly
+ * for elevated-band ARs and quarterly for moderate.
+ */
+export type TaskFrequency =
+  | "weekly"
+  | "monthly"
+  | "quarterly"
+  | "half-yearly"
+  | "annual"
+  | "ad-hoc";
+
+export type TaskCategory =
+  | "review"
+  | "attestation"
+  | "data-collection"
+  | "filing"
+  | "training"
+  | "other";
+
+export type TaskScope = "per-ar" | "firm-level";
+
+export type TaskAppliesTo = "AR" | "IAR" | "all";
+
+export type TaskRegulatorySource =
+  | "ps22-11"
+  | "sup-12.6"
+  | "sup-12.6a"
+  | "sup-15"
+  | "disp-1"
+  | "consumer-duty"
+  | "sysc-15a"
+  | "fg21-1"
+  | "internal";
+
+export interface OversightTask {
+  id: Ulid;
+  title: string;
+  description: string;
+  category: TaskCategory;
+  scope: TaskScope;
+  appliesTo: TaskAppliesTo;
+  /** Default frequency the product ships with. */
+  defaultFrequency: TaskFrequency;
+  ownerRole: Role;
+  /** Days after the cycle start the task is due. */
+  dueOffsetDays: number;
+  source: TaskRegulatorySource;
+  /** Whether this is a canonical product-shipped task or one the
+   *  principal-admin added. */
+  isCanonical: boolean;
+}
+
+/**
+ * Per-tenant override of a canonical task or a custom task added
+ * by principal-admin. The override layers on the canonical record
+ * so changes are auditable and reversible.
+ */
+export interface OversightTaskOverride {
+  taskId: Ulid;
+  /** If null, falls back to the canonical defaultFrequency. */
+  frequency: TaskFrequency | null;
+  enabled: boolean;
+  notes: string | null;
+}
+
+/**
+ * Connector for ingesting data into the platform. Spans both MI
+ * data ingestion (CRM webhooks, lender portals, CSV uploads,
+ * complaints systems) and external enrichment APIs (Companies
+ * House, CreditSafe, FCA Register).
+ */
+export type ConnectorKind =
+  | "crm-webhook"
+  | "lender-portal"
+  | "csv-upload"
+  | "complaints-system"
+  | "companies-house"
+  | "creditsafe"
+  | "fca-register";
+
+export type ConnectorPurpose = "mi-ingestion" | "enrichment";
+
+export type ConnectorStatus =
+  | "connected"
+  | "syncing"
+  | "error"
+  | "not-configured";
+
+export interface DataConnector {
+  id: Ulid;
+  kind: ConnectorKind;
+  purpose: ConnectorPurpose;
+  label: string;
+  description: string;
+  status: ConnectorStatus;
+  lastSyncAt: IsoTimestamp | null;
+  /** Sync cadence in human form, e.g. "every 4 hours", "on event". */
+  cadenceLabel: string;
+  /** Fields populated by the connector (for enrichment connectors). */
+  enrichedFields: string[];
+  /** Number of ARs currently covered by this connector. */
+  arCoverage: number;
+  /** Connector-specific error string if status === 'error'. */
+  errorMessage: string | null;
+  /** External provider's documentation URL. */
+  providerDocsUrl: string | null;
+}
