@@ -1,26 +1,241 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-display);
+
+  /* shadcn token mapping */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Brand-specific tokens, exposed to Tailwind utilities */
+  --color-brand: var(--brand-primary);
+  --color-brand-foreground: var(--brand-primary-foreground);
+  --color-amber: var(--amber);
+  --color-amber-foreground: var(--amber-foreground);
+  --color-amber-soft: var(--amber-soft);
+
+  /* Severity scale, used on risk-score bands and breach severity */
+  --color-severity-low: var(--severity-low);
+  --color-severity-moderate: var(--severity-moderate);
+  --color-severity-elevated: var(--severity-elevated);
+  --color-severity-high: var(--severity-high);
+  --color-severity-critical: var(--severity-critical);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* -----------------------------------------------------------------
+   Light mode tokens. Slate backgrounds, amber secondary accent, primary
+   inherits from --brand-primary which the active skin overrides.
+   ----------------------------------------------------------------- */
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.992 0.005 90);     /* paper-warm, family-consistent */
+  --foreground: oklch(0.208 0.042 265.75); /* slate-900 */
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.208 0.042 265.75);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.208 0.042 265.75);
+
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--brand-primary-foreground);
+
+  --secondary: oklch(0.968 0.007 247.9);   /* slate-100 */
+  --secondary-foreground: oklch(0.208 0.042 265.75);
+
+  --muted: oklch(0.968 0.007 247.9);
+  --muted-foreground: oklch(0.554 0.046 257.42); /* slate-500 */
+
+  --accent: oklch(0.962 0.059 95.62);      /* amber-100 */
+  --accent-foreground: oklch(0.473 0.137 46.2);  /* amber-800 */
+
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.929 0.013 255.5);
+  --input: oklch(0.929 0.013 255.5);
+  --ring: oklch(0.769 0.188 70.08);
+
+  /* Skin-overridable brand token. Default Heritage indigo. */
+  --brand-primary: oklch(0.345 0.135 268);
+  --brand-primary-foreground: oklch(0.984 0.004 247.86);
+
+  /* Constant amber tokens, family secondary accent. */
+  --amber: oklch(0.769 0.188 70.08);
+  --amber-foreground: oklch(0.208 0.042 265.75);
+  --amber-soft: oklch(0.962 0.059 95.62);
+
+  /* Severity colour scale, AA-large against the slate-50 background. */
+  --severity-low: oklch(0.785 0.115 155);       /* sage */
+  --severity-moderate: oklch(0.835 0.155 90);   /* hay */
+  --severity-elevated: oklch(0.769 0.188 70.08); /* amber-500, family accent */
+  --severity-high: oklch(0.685 0.205 35);       /* tangerine */
+  --severity-critical: oklch(0.577 0.245 27.325); /* destructive */
+
+  --chart-1: var(--brand-primary);
+  --chart-2: oklch(0.769 0.188 70.08);
+  --chart-3: oklch(0.554 0.046 257.42);
+  --chart-4: oklch(0.872 0.022 252.9);
+  --chart-5: oklch(0.555 0.135 66.44);
+
+  --sidebar: oklch(0.984 0.004 247.86);
+  --sidebar-foreground: oklch(0.208 0.042 265.75);
+  --sidebar-primary: var(--brand-primary);
+  --sidebar-primary-foreground: var(--brand-primary-foreground);
+  --sidebar-accent: oklch(0.962 0.059 95.62);
+  --sidebar-accent-foreground: oklch(0.473 0.137 46.2);
+  --sidebar-border: oklch(0.929 0.013 255.5);
+  --sidebar-ring: oklch(0.769 0.188 70.08);
+}
+
+/* -----------------------------------------------------------------
+   Dark mode
+   ----------------------------------------------------------------- */
+.dark {
+  --background: oklch(0.129 0.04 264.69);
+  --foreground: oklch(0.984 0.004 247.86);
+
+  --card: oklch(0.208 0.042 265.75);
+  --card-foreground: oklch(0.984 0.004 247.86);
+
+  --popover: oklch(0.208 0.042 265.75);
+  --popover-foreground: oklch(0.984 0.004 247.86);
+
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--brand-primary-foreground);
+
+  --secondary: oklch(0.279 0.041 260.03);
+  --secondary-foreground: oklch(0.984 0.004 247.86);
+
+  --muted: oklch(0.279 0.041 260.03);
+  --muted-foreground: oklch(0.704 0.04 256.79);
+
+  --accent: oklch(0.372 0.044 257.29);
+  --accent-foreground: oklch(0.962 0.059 95.62);
+
+  --destructive: oklch(0.704 0.191 22.216);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.769 0.188 70.08);
+
+  --amber: oklch(0.769 0.188 70.08);
+  --amber-foreground: oklch(0.984 0.004 247.86);
+  --amber-soft: oklch(0.279 0.041 260.03);
+
+  --severity-low: oklch(0.685 0.115 155);
+  --severity-moderate: oklch(0.755 0.155 90);
+  --severity-elevated: oklch(0.769 0.188 70.08);
+  --severity-high: oklch(0.685 0.205 35);
+  --severity-critical: oklch(0.704 0.191 22.216);
+
+  --chart-1: var(--brand-primary);
+  --chart-2: oklch(0.769 0.188 70.08);
+  --chart-3: oklch(0.704 0.04 256.79);
+  --chart-4: oklch(0.279 0.041 260.03);
+  --chart-5: oklch(0.555 0.135 66.44);
+
+  --sidebar: oklch(0.208 0.042 265.75);
+  --sidebar-foreground: oklch(0.984 0.004 247.86);
+  --sidebar-primary: var(--brand-primary);
+  --sidebar-primary-foreground: var(--brand-primary-foreground);
+  --sidebar-accent: oklch(0.279 0.041 260.03);
+  --sidebar-accent-foreground: oklch(0.962 0.059 95.62);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.769 0.188 70.08);
+}
+
+/* -----------------------------------------------------------------
+   Per-skin brand overrides. Three principal-firm tenants.
+   Heritage indigo, Crown forest emerald, Pinpoint plum-aubergine.
+   ----------------------------------------------------------------- */
+[data-skin="heritage"] {
+  --brand-primary: oklch(0.345 0.135 268);
+  --brand-primary-foreground: oklch(0.984 0.004 247.86);
+}
+
+[data-skin="crown"] {
+  --brand-primary: oklch(0.385 0.105 165);
+  --brand-primary-foreground: oklch(0.984 0.004 247.86);
+}
+
+[data-skin="pinpoint"] {
+  --brand-primary: oklch(0.395 0.155 332);
+  --brand-primary-foreground: oklch(0.984 0.004 247.86);
+}
+
+/* Lift Crown's emerald in dark mode for AAA contrast. */
+.dark[data-skin="crown"],
+.dark [data-skin="crown"] {
+  --brand-primary: oklch(0.555 0.105 165);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
+  html {
+    @apply font-sans antialiased;
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Subtle grain matches family. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.85' numOctaves='1' seed='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    mix-blend-mode: multiply;
+  }
 }
