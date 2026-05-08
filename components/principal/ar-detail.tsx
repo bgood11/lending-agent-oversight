@@ -68,52 +68,122 @@ export function ArDetail({ arId }: { arId: string }) {
         AR register
       </Link>
 
-      {/* Header */}
-      <header className="flex flex-col lg:flex-row lg:items-start gap-6">
-        <div className="flex-1 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs text-muted-foreground tabular-nums">
-              {ar.frn ? `FRN ${ar.frn}` : "Via principal"}
-            </span>
-            <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
-              {ar.type}
-            </Badge>
-            <Badge
-              variant={ar.status === "active" ? "secondary" : "outline"}
-              className="text-[10px] capitalize"
-            >
-              {ar.status.replace(/-/g, " ")}
-            </Badge>
-            {ar.isSelfEmployed && (
-              <Badge variant="outline" className="text-[10px]">
-                Self-employed
+      {/* Header — spatial composition rebuild
+          Three zones replacing the badges-and-h1 wall: identity card
+          with a brand-tinted wash, risk gauge centre, "next 30 days"
+          timeline card right. The composition gives each piece its
+          own breathing room and makes the AR's identity, risk
+          posture, and upcoming obligations independently legible. */}
+      <header className="grid lg:grid-cols-[minmax(0,1.5fr)_auto_minmax(0,1fr)] gap-3 items-stretch">
+        {/* Identity card */}
+        <Card className="relative overflow-hidden p-6">
+          <div
+            aria-hidden
+            className="absolute -top-16 -right-16 size-56 rounded-full opacity-[0.10] blur-3xl"
+            style={{ background: "var(--brand-primary)" }}
+          />
+          <div className="relative space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                className="font-mono text-[10px] uppercase tracking-wider tabular-nums"
+                style={{
+                  background:
+                    "color-mix(in oklch, var(--brand-primary) 8%, transparent)",
+                  color: "var(--brand-primary)",
+                  borderColor:
+                    "color-mix(in oklch, var(--brand-primary) 25%, transparent)",
+                }}
+              >
+                {ar.frn ? `FRN ${ar.frn}` : "Via principal"}
               </Badge>
-            )}
-            {ar.supportsImportantBusinessService && (
-              <Badge variant="outline" className="text-[10px] gap-1">
-                <ShieldCheck className="size-3" />
-                Important Business Service
+              <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+                {ar.type}
               </Badge>
-            )}
+              <StatusChip status={ar.status} />
+              {ar.isSelfEmployed && (
+                <Badge variant="outline" className="text-[10px]">
+                  Self-employed
+                </Badge>
+              )}
+              {ar.supportsImportantBusinessService && (
+                <Badge variant="outline" className="text-[10px] gap-1">
+                  <ShieldCheck className="size-3" />
+                  IBS
+                </Badge>
+              )}
+            </div>
+            <h1 className="font-display text-3xl sm:text-4xl font-medium leading-[1.05] tracking-tight">
+              {ar.tradingName}
+            </h1>
+            <div className="text-sm text-muted-foreground space-y-0.5">
+              <div>{ar.legalName}</div>
+              <div className="text-[12px]">
+                {ar.city} · supervised by{" "}
+                <span className="font-medium text-foreground">
+                  {skinDef.shortName}
+                </span>
+              </div>
+            </div>
+            <div className="pt-1 border-t border-border/60 text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="inline-flex items-center gap-1">
+                <motion.span
+                  className="size-1.5 rounded-full bg-emerald-500"
+                  initial={{ opacity: 0.4 }}
+                  animate={{ opacity: [0.4, 1, 0.4] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                  aria-hidden
+                />
+                Auto-enriched
+              </span>
+              <span>· Companies House 4h</span>
+              <span>· FCA Register 12h</span>
+              <span>· CreditSafe 2d</span>
+            </div>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-medium leading-tight tracking-tight">
-            {ar.tradingName}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {ar.legalName} · {ar.city} · supervised by {skinDef.shortName}
-          </p>
-          <p className="text-[11px] text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 mt-1">
-            <span className="inline-flex items-center gap-1">
-              <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
-              Auto-enriched: Companies House (4h ago) · FCA Register (12h ago) · CreditSafe (2d ago)
-            </span>
-          </p>
-        </div>
+        </Card>
 
-        <div className="flex flex-col items-center gap-3 shrink-0">
-          <RiskGauge score={ar.riskScore} size="lg" />
-          <RiskBandBadge band={ar.riskBand} />
-        </div>
+        {/* Risk gauge zone */}
+        <Card className="p-6 grid place-items-center min-w-[220px]">
+          <div className="flex flex-col items-center gap-3">
+            <RiskGauge score={ar.riskScore} size="lg" />
+            <RiskBandBadge band={ar.riskBand} />
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70 font-medium">
+              composite · five inputs
+            </div>
+          </div>
+        </Card>
+
+        {/* Next 30 days timeline */}
+        <Card className="p-5 space-y-2.5 lg:max-w-xs">
+          <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">
+            Next 30 days
+          </div>
+          <div className="space-y-2.5">
+            <TimelineRow
+              label="Fitness review"
+              date={fmtShort(ar.nextReviewDueAt)}
+              days={nextReviewDays}
+              destructive={reviewOverdue}
+            />
+            {breaches.filter((b) => b.notifyByAt && !b.notifiedFcaAt).slice(0, 1).map((b) => (
+              <TimelineRow
+                key={b.id}
+                label="FCA notification"
+                date={fmtShort(b.notifyByAt!)}
+                days={Math.floor(
+                  (new Date(b.notifyByAt!).getTime() - FIXED_NOW_TS) /
+                    (24 * 3600_000),
+                )}
+                destructive
+              />
+            ))}
+            <TimelineRow
+              label="Q2 MI return"
+              date="15 Aug 2026"
+              days={99}
+            />
+          </div>
+        </Card>
       </header>
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
@@ -413,6 +483,71 @@ function fmtDate(iso: string): string {
     month: "short",
     year: "numeric",
   });
+}
+
+function fmtShort(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function StatusChip({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    active: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+    "pending-appointment":
+      "bg-amber-soft text-amber-foreground border-amber/30",
+    suspended: "bg-muted text-muted-foreground border-border",
+    "under-investigation":
+      "bg-destructive/10 text-destructive border-destructive/30",
+    terminated: "bg-muted/50 text-muted-foreground border-border line-through",
+  };
+  return (
+    <Badge
+      variant="outline"
+      className={`text-[10px] capitalize ${map[status] ?? ""}`}
+    >
+      {status.replace(/-/g, " ")}
+    </Badge>
+  );
+}
+
+function TimelineRow({
+  label,
+  date,
+  days,
+  destructive,
+}: {
+  label: string;
+  date: string;
+  days: number;
+  destructive?: boolean;
+}) {
+  const overdue = days < 0;
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className={`size-1.5 rounded-full shrink-0 ${
+          destructive || overdue
+            ? "bg-destructive"
+            : days < 14
+              ? "bg-amber"
+              : "bg-emerald-500"
+        }`}
+        aria-hidden
+      />
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-medium leading-tight truncate">{label}</div>
+        <div
+          className={`text-[10px] tabular-nums ${
+            destructive || overdue ? "text-destructive" : "text-muted-foreground"
+          }`}
+        >
+          {date} · {overdue ? `${Math.abs(days)}d overdue` : `in ${days}d`}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function fmtRelative(iso: string): string {

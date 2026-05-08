@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Download, Search } from "lucide-react";
+import { ArrowUpRight, Download, Plus, Search, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -174,11 +175,28 @@ export function ArRegisterTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sorted.map((ar) => (
+            {sorted.map((ar) => {
+              // Status-coloured left rail: brand-tinted for pending
+              // appointment, destructive for under-investigation,
+              // muted for suspended/terminated.
+              const railColour =
+                ar.status === "pending-appointment"
+                  ? "var(--brand-primary)"
+                  : ar.status === "under-investigation"
+                    ? "var(--destructive)"
+                    : ar.status === "suspended" || ar.status === "terminated"
+                      ? "var(--muted-foreground)"
+                      : null;
+              return (
               <TableRow
                 key={ar.id}
-                className="cursor-pointer hover:bg-foreground/[0.03] transition-colors"
+                className="cursor-pointer hover:bg-foreground/[0.03] transition-colors relative"
                 onClick={() => open(ar)}
+                style={
+                  railColour
+                    ? { boxShadow: `inset 3px 0 0 ${railColour}` }
+                    : undefined
+                }
               >
                 <TableCell>
                   <div className="font-medium leading-tight max-w-[260px] truncate">
@@ -217,15 +235,70 @@ export function ArRegisterTable() {
                   <ArrowUpRight className="size-4 text-muted-foreground" />
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
         {sorted.length === 0 && (
-          <div className="py-12 text-center text-sm text-muted-foreground">
-            No ARs match these filters.
-          </div>
+          <EmptyState
+            hasFilters={
+              search.trim() !== "" || status !== "all" || band !== "all"
+            }
+            onClear={() => {
+              setSearch("");
+              setStatus("all");
+              setBand("all");
+            }}
+          />
         )}
       </div>
+    </div>
+  );
+}
+
+function EmptyState({
+  hasFilters,
+  onClear,
+}: {
+  hasFilters: boolean;
+  onClear: () => void;
+}) {
+  if (hasFilters) {
+    return (
+      <div className="py-14 text-center px-6">
+        <div className="mx-auto size-10 rounded-full bg-muted grid place-items-center text-muted-foreground">
+          <Search className="size-4" />
+        </div>
+        <h3 className="text-sm font-semibold mt-4">No ARs match these filters</h3>
+        <p className="text-xs text-muted-foreground mt-1.5 max-w-xs mx-auto">
+          Try clearing the filter or broaden the risk band.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-4 gap-1.5"
+          onClick={onClear}
+        >
+          <X className="size-3.5" />
+          Clear all filters
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="py-14 text-center px-6">
+      <div className="mx-auto size-10 rounded-full bg-muted grid place-items-center text-muted-foreground">
+        <Plus className="size-4" />
+      </div>
+      <h3 className="text-sm font-semibold mt-4">No ARs on the register yet</h3>
+      <p className="text-xs text-muted-foreground mt-1.5 max-w-sm mx-auto">
+        Appoint your first AR or IAR. Companies House, CreditSafe, and the
+        FCA Register will populate the record automatically.
+      </p>
+      <Button size="sm" className="mt-4 gap-1.5" render={<Link href="/demo/principal/register/new" />}>
+        <Plus className="size-3.5" />
+        Appoint a new AR or IAR
+      </Button>
     </div>
   );
 }

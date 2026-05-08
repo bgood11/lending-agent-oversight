@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Clock, Search } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock, Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -171,9 +172,14 @@ export function BreachTriageQueue() {
           </TableBody>
         </Table>
         {sorted.length === 0 && (
-          <div className="py-12 text-center text-sm text-muted-foreground">
-            No breaches match these filters.
-          </div>
+          <BreachEmptyState
+            hasFilters={search.trim() !== "" || status !== "all" || severity !== "all"}
+            onClear={() => {
+              setSearch("");
+              setStatus("all");
+              setSeverity("all");
+            }}
+          />
         )}
       </div>
     </div>
@@ -286,4 +292,42 @@ function fmtRelative(iso: string): string {
   if (days < 7) return `${days}d ago`;
   if (days < 30) return `${Math.round(days / 7)}w ago`;
   return `${Math.round(days / 30)}mo ago`;
+}
+
+function BreachEmptyState({
+  hasFilters,
+  onClear,
+}: {
+  hasFilters: boolean;
+  onClear: () => void;
+}) {
+  if (hasFilters) {
+    return (
+      <div className="py-14 text-center px-6">
+        <div className="mx-auto size-10 rounded-full bg-muted grid place-items-center text-muted-foreground">
+          <Search className="size-4" />
+        </div>
+        <h3 className="text-sm font-semibold mt-4">No breaches match these filters</h3>
+        <p className="text-xs text-muted-foreground mt-1.5 max-w-xs mx-auto">
+          Try clearing the filter to see the full triage queue.
+        </p>
+        <Button variant="outline" size="sm" className="mt-4 gap-1.5" onClick={onClear}>
+          <X className="size-3.5" />
+          Clear all filters
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="py-14 text-center px-6">
+      <div className="mx-auto size-10 rounded-full bg-emerald-500/10 grid place-items-center text-emerald-600">
+        <CheckCircle2 className="size-5" />
+      </div>
+      <h3 className="text-sm font-semibold mt-4">A clean queue</h3>
+      <p className="text-xs text-muted-foreground mt-1.5 max-w-xs mx-auto">
+        No breaches reported across the network. New reports surface here the
+        moment they&apos;re filed by an AR or the principal.
+      </p>
+    </div>
+  );
 }
