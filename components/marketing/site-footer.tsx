@@ -35,35 +35,34 @@ export function SiteFooter() {
           </p>
         </div>
 
-        <FooterColumn label="The demo">
-          <FooterLink href="/demo/principal">Principal home</FooterLink>
+        <FooterColumn label="Principal surface">
+          <FooterLink href="/demo/principal">Compliance home</FooterLink>
           <FooterLink href="/demo/principal/register">AR register</FooterLink>
+          <FooterLink href="/demo/principal/register/new">Appoint a new AR</FooterLink>
           <FooterLink href="/demo/principal/breaches">Breach triage</FooterLink>
           <FooterLink href="/demo/principal/reviews">File reviews</FooterLink>
-          <FooterLink href="/demo/ar">AR view</FooterLink>
+          <FooterLink href="/demo/principal/annual-reviews">Annual reviews</FooterLink>
+          <FooterLink href="/demo/principal/settings">Settings</FooterLink>
         </FooterColumn>
 
-        <FooterColumn label="Documentation">
+        <FooterColumn label="AR surface &amp; docs">
+          <FooterLink href="/demo/ar">AR home</FooterLink>
+          <FooterLink href="/demo/ar/mi">Submit MI return</FooterLink>
+          <FooterLink href="/demo/ar/breaches/new">File a breach</FooterLink>
           <FooterLink href="https://lending-agent-oversight-docs.vercel.app" external>
             Docs site
           </FooterLink>
           <FooterLink
-            href="https://lending-agent-oversight-docs.vercel.app/architecture/overview/"
+            href="https://lending-agent-oversight-docs.vercel.app/architecture/connectors-and-enrichment/"
             external
           >
-            Architecture
+            Connectors architecture
           </FooterLink>
           <FooterLink
             href="https://lending-agent-oversight-docs.vercel.app/regulatory/overview/"
             external
           >
-            Regulatory
-          </FooterLink>
-          <FooterLink
-            href="https://lending-agent-oversight-docs.vercel.app/reference/data-shapes/"
-            external
-          >
-            Reference
+            Regulatory map
           </FooterLink>
         </FooterColumn>
 
@@ -78,6 +77,12 @@ export function SiteFooter() {
             <span className="inline-flex items-center gap-1">
               <GithubMark className="size-3.5" />
               GitHub
+            </span>
+          </FooterLink>
+          <FooterLink href="https://github.com/bgood11/lending-agent-oversight-docs" external>
+            <span className="inline-flex items-center gap-1">
+              <GithubMark className="size-3.5" />
+              GitHub (docs)
             </span>
           </FooterLink>
         </FooterColumn>

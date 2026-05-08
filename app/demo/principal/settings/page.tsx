@@ -46,10 +46,16 @@ export default function SettingsPage() {
       </header>
 
       <Tabs defaultValue="oversight">
-        <TabsList>
-          <TabsTrigger value="oversight">Oversight calendar</TabsTrigger>
-          <TabsTrigger value="rubric">Rubric editor</TabsTrigger>
-          <TabsTrigger value="connectors">Connectors &amp; enrichments</TabsTrigger>
+        <TabsList variant="line" className="border-b border-border w-full justify-start rounded-none px-0 pb-2">
+          <TabsTrigger value="oversight" className="px-4 py-2 text-sm">
+            Oversight calendar
+          </TabsTrigger>
+          <TabsTrigger value="rubric" className="px-4 py-2 text-sm">
+            Rubric editor
+          </TabsTrigger>
+          <TabsTrigger value="connectors" className="px-4 py-2 text-sm">
+            Connectors &amp; enrichments
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="oversight" className="mt-5">
           <SettingsOversightCalendar />
