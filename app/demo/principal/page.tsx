@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  AlertTriangle,
   CalendarClock,
   ClipboardCheck,
   ListChecks,
@@ -15,6 +14,7 @@ import { useDemoStore } from "@/lib/state";
 import { SKINS } from "@/lib/skins";
 import { computeKpis, getRequiredActions } from "@/lib/fixtures";
 import { KpiTile } from "@/components/principal/kpi-tile";
+import { RiskHeadline } from "@/components/principal/risk-headline";
 import { TopRiskTable } from "@/components/principal/top-risk-table";
 import { BreachHeatmap } from "@/components/principal/breach-heatmap";
 import { NextActions } from "@/components/principal/next-actions";
@@ -68,39 +68,45 @@ export default function PrincipalHomePage() {
         </Button>
       </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiTile
-          label="ARs in critical band"
-          value={String(kpis.critical)}
-          sublabel={`of ${kpis.activeArCount} active ARs`}
-          icon={AlertTriangle}
-          accent={kpis.critical > 0 ? "primary" : "muted"}
-          destructive={kpis.critical > 4}
-          delay={0}
+      {/* Editorial layout: one headline KPI dominates the eye, three
+          supporting KPIs sit alongside. The composition signals "here is
+          the one number that matters" rather than "here are four equally-
+          weighted numbers". */}
+      <div className="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-3">
+        <RiskHeadline
+          bandDistribution={kpis.bandDistribution}
+          totalActive={kpis.activeArCount}
         />
-        <KpiTile
-          label="Breaches awaiting FCA"
-          value={String(kpis.awaitingNotification)}
-          sublabel={kpis.awaitingNotification > 0 ? "SUP 15 clock running" : "All current breaches notified"}
-          icon={CalendarClock}
-          accent="amber"
-          delay={0.05}
-        />
-        <KpiTile
-          label="Overdue file reviews"
-          value={String(kpis.overdueReviews)}
-          sublabel={`${kpis.completedReviewsThisMonth} completed this month`}
-          icon={ClipboardCheck}
-          delay={0.10}
-        />
-        <KpiTile
-          label="Annual reviews due"
-          value={String(kpis.dueThisMonth)}
-          sublabel="in the next 30 days"
-          icon={ListChecks}
-          accent="muted"
-          delay={0.15}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
+          <KpiTile
+            label="Breaches awaiting FCA"
+            value={String(kpis.awaitingNotification)}
+            sublabel={
+              kpis.awaitingNotification > 0
+                ? "SUP 15 clock running"
+                : "All current breaches notified"
+            }
+            icon={CalendarClock}
+            accent="amber"
+            destructive={kpis.awaitingNotification > 2}
+            delay={0.08}
+          />
+          <KpiTile
+            label="Overdue file reviews"
+            value={String(kpis.overdueReviews)}
+            sublabel={`${kpis.completedReviewsThisMonth} completed this month`}
+            icon={ClipboardCheck}
+            delay={0.14}
+          />
+          <KpiTile
+            label="Annual reviews due"
+            value={String(kpis.dueThisMonth)}
+            sublabel="in the next 30 days"
+            icon={ListChecks}
+            accent="muted"
+            delay={0.20}
+          />
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4">

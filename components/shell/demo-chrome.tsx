@@ -33,11 +33,16 @@ export function DemoChrome() {
         <div className="h-6 w-px bg-border mx-1" aria-hidden />
 
         <div className="flex items-center gap-2 min-w-0">
-          <SkinLogo skinId={skin} className="size-6 shrink-0" />
+          <span
+            className="inline-grid place-items-center rounded-md ring-1 ring-[color:var(--brand-primary)]/20 bg-[color:var(--brand-primary)]/5 size-7 shrink-0 transition-shadow hover:ring-[color:var(--brand-primary)]/40"
+            aria-hidden
+          >
+            <SkinLogo skinId={skin} className="size-5" />
+          </span>
           <span className="font-medium text-sm truncate hidden sm:inline">
             {skinDef.shortName}
           </span>
-          <span className="hidden lg:inline text-[11px] text-muted-foreground tabular-nums">
+          <span className="hidden lg:inline text-[11px] text-muted-foreground tabular-nums font-mono">
             FRN {skinDef.frn}
           </span>
         </div>
@@ -48,6 +53,13 @@ export function DemoChrome() {
         <SkinSwitcher />
         <ModeToggle />
       </div>
+      {/* Per-skin brand rail — proves the tenant skin is in effect at a
+          glance and gives every surface an unambiguous brand presence. */}
+      <div
+        aria-hidden
+        className="h-[2px] w-full"
+        style={{ background: "var(--brand-primary)" }}
+      />
     </header>
   );
 }

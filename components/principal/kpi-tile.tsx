@@ -40,12 +40,18 @@ export function KpiTile({
         <div className="flex items-start justify-between gap-2">
           <div
             className={cn(
-              "size-9 rounded-lg grid place-items-center shrink-0",
-              accent === "amber" && "bg-amber-soft text-amber-foreground",
-              accent === "primary" && "bg-primary/10 text-primary",
-              accent === "muted" && "bg-muted text-muted-foreground",
-              destructive && "bg-destructive/10 text-destructive",
+              "size-9 rounded-lg grid place-items-center shrink-0 ring-1",
+              accent === "amber" && "bg-amber-soft text-amber-foreground ring-amber/30",
+              accent === "primary" &&
+                "ring-[color:var(--brand-primary)]/25 bg-[color:var(--brand-primary)]/10",
+              accent === "muted" && "bg-muted text-muted-foreground ring-border",
+              destructive && "bg-destructive/10 text-destructive ring-destructive/30",
             )}
+            style={
+              accent === "primary" && !destructive
+                ? { color: "var(--brand-primary)" }
+                : undefined
+            }
           >
             <Icon className="size-4" />
           </div>

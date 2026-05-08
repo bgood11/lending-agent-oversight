@@ -44,13 +44,30 @@ export function PrincipalNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors relative",
                 active
-                  ? "bg-amber-soft text-amber-foreground"
+                  ? "text-foreground bg-[color:var(--brand-primary)]/8"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
               )}
+              style={
+                active
+                  ? {
+                      // Brand-coloured underline rail makes the tenant skin
+                      // unambiguous on every surface.
+                      boxShadow:
+                        "inset 0 -2px 0 0 var(--brand-primary)",
+                    }
+                  : undefined
+              }
             >
-              <item.Icon className="size-3.5" />
+              <item.Icon
+                className="size-3.5"
+                style={
+                  active
+                    ? { color: "var(--brand-primary)" }
+                    : undefined
+                }
+              />
               {item.label}
             </Link>
           );

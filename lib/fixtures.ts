@@ -455,15 +455,26 @@ export function computeKpis(skin: SkinId) {
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 10);
 
+  // Risk-band distribution for the editorial KPI bar.
+  const activeArs = ars.filter((a) => a.status === "active");
+  const bandDistribution = {
+    low: activeArs.filter((a) => a.riskBand === "low").length,
+    moderate: activeArs.filter((a) => a.riskBand === "moderate").length,
+    elevated: activeArs.filter((a) => a.riskBand === "elevated").length,
+    high: activeArs.filter((a) => a.riskBand === "high").length,
+    critical: activeArs.filter((a) => a.riskBand === "critical").length,
+  };
+
   return {
     critical,
     awaitingNotification,
     overdueReviews,
     dueThisMonth,
-    activeArCount: ars.filter((a) => a.status === "active").length,
+    activeArCount: activeArs.length,
     totalAr: ars.length,
     breachActivity90d: last90Days,
     topRisk,
+    bandDistribution,
     completedReviewsThisMonth: reviews.filter((r) => {
       if (!r.completedAt) return false;
       const d = new Date(r.completedAt).getTime();
