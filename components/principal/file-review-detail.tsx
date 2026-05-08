@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
@@ -18,7 +18,7 @@ import {
 import { useDemoStore } from "@/lib/state";
 import { SKINS } from "@/lib/skins";
 import { getDataset } from "@/lib/fixtures";
-import { getRubric, getRubricSections, type RubricItem } from "@/lib/rubrics";
+import { getRubric, getRubricSections, getRubricLabel, type RubricItem } from "@/lib/rubrics";
 import { cn } from "@/lib/utils";
 
 type Outcome = "pass" | "advisory" | "fail" | "n/a";
@@ -43,9 +43,6 @@ export function FileReviewDetail({ reviewId }: { reviewId: string }) {
   const dataset = getDataset(skin);
   const review = dataset.reviews.find((r) => r.id === reviewId);
 
-  const rubric = useMemo(() => getRubric(skinDef.rubric), [skinDef.rubric]);
-  const sections = useMemo(() => getRubricSections(skinDef.rubric), [skinDef.rubric]);
-
   const [findings, setFindings] = useState<Record<string, Outcome>>({});
   const [notes, setNotes] = useState("");
   const [completed, setCompleted] = useState(false);
@@ -53,6 +50,10 @@ export function FileReviewDetail({ reviewId }: { reviewId: string }) {
   if (!review) return <NotFound />;
 
   const ar = dataset.ars.find((a) => a.id === review.arId);
+  const arType = ar?.type ?? "AR";
+  const rubric = getRubric(skinDef.rubric, arType);
+  const sections = getRubricSections(skinDef.rubric, arType);
+  const rubricLabel = getRubricLabel(skinDef.rubric, arType);
   const totalItems = rubric.length;
   const filled = Object.keys(findings).length;
   const passes = Object.values(findings).filter((o) => o === "pass").length;
@@ -84,8 +85,13 @@ export function FileReviewDetail({ reviewId }: { reviewId: string }) {
             File review
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5">
-            {ar?.tradingName} · {skinDef.rubric} rubric · reviewed by {review.reviewerName}
+            {ar?.tradingName} · {rubricLabel} rubric{arType === "IAR" ? " (introducer scope)" : ""} · reviewed by {review.reviewerName}
           </p>
+          {arType === "IAR" && (
+            <p className="text-[11px] text-amber-foreground bg-amber-soft/60 border border-amber/30 rounded px-2 py-1 mt-2 inline-block">
+              IAR appointment — narrowed rubric. Suitability and affordability items do not apply: an IAR may not give regulated advice, arrange, or deal.
+            </p>
+          )}
         </div>
         <div className="flex flex-col items-end gap-2">
           <div className="text-3xl font-bold tabular-nums leading-none">

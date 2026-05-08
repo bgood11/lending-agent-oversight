@@ -5,12 +5,21 @@
  *   ICOBS for general insurance broking
  *   CONC for consumer credit broking
  *
+ * IAR cases get a separate, vertical-agnostic rubric. An IAR is
+ * limited to effecting introductions and providing information
+ * about the principal's products (SUP 12.2). It cannot give
+ * regulated advice, arrange, or deal. Reviewing an IAR file
+ * against MCOB suitability or ICOBS demands-and-needs is therefore
+ * the wrong test. The IAR rubric instead checks introduction
+ * quality, status disclosure, information accuracy, and scope
+ * adherence.
+ *
  * Items reference the FCA Handbook section directly so the rubric
  * stays auditable. In production these would be tenant-tunable; the
  * demo ships the canonical set.
  */
 
-import type { RubricCode } from "./types";
+import type { RubricCode, ArType } from "./types";
 
 export interface RubricItem {
   /** Handbook reference, e.g. "MCOB 4.7A.2R". */
@@ -81,16 +90,65 @@ const CONC_ITEMS: RubricItem[] = [
   { code: "PRIN 2A.4", label: "Consumer support outcome recorded", section: "Consumer Duty" },
 ];
 
+/**
+ * IAR rubric. Vertical-agnostic. Used for any AR whose appointment
+ * type is IAR, regardless of whether the principal firm holds MCOB,
+ * ICOBS, or CONC permissions. The items are deliberately narrower:
+ * an IAR is making introductions and passing information, not
+ * advising or arranging.
+ *
+ * Sources: SUP 12.2 (IAR scope), SUP 12.5 (written contract scope),
+ * PRIN 7 (clear, fair and not misleading communications), PRIN 2A
+ * (Consumer Duty applied at point of introduction), FG21/1
+ * (vulnerability identification at first contact).
+ */
+const IAR_ITEMS: RubricItem[] = [
+  // Section: Introduction quality
+  { code: "SUP 12.2.2", label: "Introduction was within the scope of the IAR appointment", section: "Introduction" },
+  { code: "SUP 12.5.5", label: "Customer informed they are dealing with an introducer, not the principal", section: "Introduction" },
+  { code: "PRIN 7", label: "Information about the principal's product was clear, fair, and not misleading", section: "Introduction" },
+  // Section: Status and remuneration disclosure
+  { code: "SUP 12.5.6", label: "Status disclosure (regulated via the principal) provided to customer", section: "Disclosure" },
+  { code: "DISP 1.2", label: "Complaints route to the principal explained", section: "Disclosure" },
+  { code: "CONC 4.5 / ICOBS 4 / MCOB 4.4A", label: "Any commission or referral fee disclosed before introduction", section: "Disclosure" },
+  // Section: Scope adherence (the failure mode for IARs)
+  { code: "SUP 12.2.10", label: "No regulated advice given (no recommendation, no comparison, no opinion on suitability)", section: "Scope adherence" },
+  { code: "SUP 12.2.11", label: "No arranging activity carried out (no application completion, no submission)", section: "Scope adherence" },
+  { code: "SUP 12.2.12", label: "Only the principal's approved promotional material was used", section: "Scope adherence" },
+  // Section: Information accuracy and hand-off
+  { code: "PRIN 2A", label: "Customer information collected was accurate and complete at hand-off", section: "Hand-off" },
+  { code: "FG21/1", label: "Vulnerability indicators flagged to the principal at hand-off", section: "Hand-off" },
+  { code: "SYSC 9", label: "Introduction recorded with timestamp, customer consent, and product context", section: "Hand-off" },
+];
+
 export const RUBRICS: Record<RubricCode, RubricItem[]> = {
   MCOB: MCOB_ITEMS,
   ICOBS: ICOBS_ITEMS,
   CONC: CONC_ITEMS,
 };
 
-export function getRubric(code: RubricCode): RubricItem[] {
+/**
+ * Pick the rubric for a given AR. IAR appointments get the
+ * vertical-agnostic IAR rubric; AR appointments get the
+ * principal's vertical rubric.
+ */
+export function getRubric(code: RubricCode, arType: ArType = "AR"): RubricItem[] {
+  if (arType === "IAR") return IAR_ITEMS;
   return RUBRICS[code];
 }
 
-export function getRubricSections(code: RubricCode): string[] {
-  return Array.from(new Set(RUBRICS[code].map((i) => i.section)));
+export function getRubricSections(code: RubricCode, arType: ArType = "AR"): string[] {
+  return Array.from(new Set(getRubric(code, arType).map((i) => i.section)));
 }
+
+/**
+ * Identifier rendered in the file-review header. The vertical
+ * rubric uses its handbook code (MCOB / ICOBS / CONC); IAR
+ * reviews render as "IAR" so the reviewer is in no doubt the
+ * narrower scope applies.
+ */
+export function getRubricLabel(code: RubricCode, arType: ArType = "AR"): string {
+  return arType === "IAR" ? "IAR" : code;
+}
+
+export const IAR_RUBRIC = IAR_ITEMS;
